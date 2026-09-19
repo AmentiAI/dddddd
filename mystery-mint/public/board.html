@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>The Board · The Order</title>
+  <meta name="description" content="The public record of everyone sworn to The Order. 2,000 packs at $2. All profits go to The Future of The Order.">
+  <meta property="og:title" content="The Board · The Order">
+  <meta property="og:description" content="The public record of everyone sworn to The Order.">
+  <meta property="og:image" content="/pack.png">
+  <meta name="theme-color" content="#050505">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preload" as="image" href="pack.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="embers" aria-hidden="true"></canvas>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+  <div class="cursor" aria-hidden="true"></div>
+
+  <header class="nav">
+    <a class="brand" href="/" aria-label="The Order, home">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><use href="#glyph"/></svg>
+      <span>THE ORDER</span>
+    </a>
+    <nav class="links" aria-label="Sections">
+      <a href="/story">Story</a>
+      <a href="/#game">The Game</a>
+      <a href="/#rites">Rites</a>
+      <a href="/board" aria-current="page">Board</a>
+    </nav>
+    <button class="btn btn-ember nav-cta" data-open-oath>Whitelist</button>
+  </header>
+
+  <main class="board-page" id="top">
+    <header class="story-head">
+      <img class="story-pack" src="pack.png" alt="" width="220" height="330">
+      <p class="eyebrow mono">// the sworn · 1,750 whitelist spots · 2,000 seals</p>
+      <h1 class="title" data-decode>THE BOARD</h1>
+      <p class="lede">Every initiate who has taken the oath. Public names only.</p>
+      <p class="treasury">5% creator fee. All profits go to <em>The Future of The Order</em>.</p>
+      <p class="board-count mono"><span data-sworn-line>---- / 1,750 sworn</span></p>
+    </header>
+
+    <div class="board-wrap">
+      <table class="board-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>X</th>
+            <th>Wallet</th>
+            <th>Sworn</th>
+          </tr>
+        </thead>
+        <tbody id="board-rows"></tbody>
+      </table>
+      <p class="board-empty" id="board-empty" hidden>No one has sworn yet. The ledger is waiting.</p>
+      <p class="board-empty" id="board-error" hidden>The ledger cannot be read. Try again.</p>
+    </div>
+
+    <section class="section oath-banner reveal">
+      <p class="mono eyebrow">// the door is open. not for long.</p>
+      <h2 class="big" data-decode>ARE YOU ONE OF US?</h2>
+      <p class="banner-tag">2,000 packs · $2 · 5% creator fee · All profits go to The Future of The Order.</p>
+      <button class="btn btn-ember btn-lg" data-open-oath>Swear the Oath</button>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <svg class="footer-glyph" viewBox="0 0 40 40" aria-hidden="true"><use href="#glyph"/></svg>
+    <p class="cinzel">The Order is watching.</p>
+    <p class="mono small">
+      <a href="#" class="js-x-link" target="_blank" rel="noopener">X / @TheHoodedOrder</a>
+      · © <span class="js-year"></span> The Order
+    </p>
+    <p class="mono small dim">2,000 packs · $2 · 5% creator fee · All profits go to The Future of The Order.</p>
+    <p class="mono small dim">NFTs are digital collectibles for use in the game, not investments. Nothing here is financial advice.</p>
+  </footer>
+
+  <div class="oath" id="oath" role="dialog" aria-modal="true" aria-labelledby="oath-title" hidden>
+    <div class="oath-backdrop" data-close-oath></div>
+    <div class="oath-panel">
+      <button class="oath-close" data-close-oath aria-label="Close">✕</button>
+      <p class="mono eyebrow">// rite i · the summoning</p>
+      <h2 id="oath-title" class="cinzel">THE OATH</h2>
+      <p class="oath-sub">2,000 packs · $2 · 5% fee · profits to The Future of The Order. <span class="mono" data-sworn-line></span></p>
+
+      <div class="oath-body" id="oath-form-view">
+        <form id="oath-form" novalidate>
+          <fieldset id="oath-fields">
+            <div class="step">
+              <div class="step-head"><span class="step-no">I</span><h3>Reveal yourself</h3></div>
+              <label class="field">
+                <span>X username</span>
+                <input name="xUsername" id="x-username" class="mono" placeholder="@handle" maxlength="16" autocomplete="off" spellcheck="false" required>
+                <small class="err" data-err="xUsername"></small>
+              </label>
+            </div>
+            <div class="step">
+              <div class="step-head"><span class="step-no">II</span><h3>Mark your vessel</h3></div>
+              <label class="field">
+                <span>Wallet address (EVM)</span>
+                <div class="wallet-wrap">
+                  <input name="wallet" id="wallet" class="mono" placeholder="0x…" autocomplete="off" spellcheck="false" maxlength="42" required>
+                  <span class="wallet-ok" aria-hidden="true">◈</span>
+                </div>
+                <small class="err" data-err="wallet"></small>
+              </label>
+            </div>
+            <div class="step">
+              <div class="step-head"><span class="step-no">III</span><h3>Speak</h3></div>
+              <label class="field">
+                <span>Email <em>(optional)</em></span>
+                <input name="email" type="email" maxlength="254" placeholder="for the summons only">
+                <small class="err" data-err="email"></small>
+              </label>
+              <label class="field">
+                <span>How did the whisper reach you?</span>
+                <select name="source" required>
+                  <option value="">Choose…</option>
+                  <option value="x">A post on X</option>
+                  <option value="discord">A Discord server</option>
+                  <option value="friend">A sworn friend</option>
+                  <option value="whisper">A whisper in the dark</option>
+                  <option value="other">Somewhere else</option>
+                </select>
+                <small class="err" data-err="source"></small>
+              </label>
+              <label class="field">
+                <span>Why should the Order accept you?</span>
+                <textarea name="reason" rows="3" maxlength="600" placeholder="Speak plainly. We will know if you lie." required></textarea>
+                <small class="err" data-err="reason"></small>
+              </label>
+            </div>
+            <div class="step">
+              <div class="step-head"><span class="step-no">IV</span><h3>Swear</h3></div>
+              <label class="oath-check">
+                <input type="checkbox" name="oath">
+                <span>I swear to keep the secrets of the Order, to take from none who have little, and to answer when the packs are called.</span>
+              </label>
+              <small class="err" data-err="oath"></small>
+            </div>
+            <p class="form-error" id="form-error" hidden></p>
+            <button class="btn btn-ember btn-lg btn-block" type="submit" id="swear-btn">Seal the Oath</button>
+          </fieldset>
+        </form>
+      </div>
+
+      <div class="sworn" id="oath-sworn" hidden>
+        <div class="initiate-card">
+          <img class="initiate-pack" src="pack.png" alt="" width="96" height="144">
+          <p class="mono eyebrow">// you are known now</p>
+          <p class="initiate-label cinzel">INITIATE</p>
+          <p class="initiate-no" id="initiate-no">#0000</p>
+          <p class="initiate-alias" id="initiate-alias"></p>
+          <p class="mono small dim" id="initiate-wallet"></p>
+        </div>
+        <p class="sworn-copy">Your oath is sealed. Say nothing of what you've seen. <em>When the packs are called, you will know.</em></p>
+        <a class="btn btn-x" id="share-x" target="_blank" rel="noopener">Announce yourself on X</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="secret" id="secret" hidden>
+    <p class="mono">// clue 0 recovered</p>
+    <p class="cinzel">"The forest remembers every name the ledger forgot."</p>
+  </div>
+
+  <svg width="0" height="0" class="defs" aria-hidden="true">
+    <symbol id="glyph" viewBox="0 0 40 40">
+      <circle cx="20" cy="23" r="10" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <path d="M20 3.5 V33.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+      <path d="M10.2 23 H29.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M20 2.6 L17.6 9.2 H22.4 Z" fill="currentColor"/>
+    </symbol>
+  </svg>
+
+  <script src="app.js" type="module"></script>
+</body>
+</html>

@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>The Story · The Order</title>
+  <meta name="description" content="Born in the Trenches. Forged in Silence. 2,000 sealed packs at $2. All profits go to The Future of The Order.">
+  <meta property="og:title" content="The Story · The Order">
+  <meta property="og:description" content="2,000 sealed packs at $2. 5% creator fee. All profits go to The Future of The Order.">
+  <meta property="og:image" content="/pack.png">
+  <meta name="theme-color" content="#050505">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preload" as="image" href="pack.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="embers" aria-hidden="true"></canvas>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+  <div class="cursor" aria-hidden="true"></div>
+
+  <header class="nav">
+    <a class="brand" href="/" aria-label="The Order, home">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><use href="#glyph"/></svg>
+      <span>THE ORDER</span>
+    </a>
+    <nav class="links" aria-label="Sections">
+      <a href="/story" aria-current="page">Story</a>
+      <a href="/#game">The Game</a>
+      <a href="/#rites">Rites</a>
+      <a href="/board">Board</a>
+    </nav>
+    <button class="btn btn-ember nav-cta" data-open-oath>Whitelist</button>
+  </header>
+
+  <main class="story-page" id="top">
+    <header class="story-head">
+      <img class="story-pack" src="pack.png" alt="" width="220" height="330">
+      <p class="eyebrow mono">// born in the trenches · 2,000 seals · $2</p>
+      <h1 class="title" data-decode>THE ORDER</h1>
+      <p class="lede">Born in the Trenches. Forged in Silence.</p>
+      <p class="treasury">5% creator fee. All profits go to <em>The Future of The Order</em>.</p>
+    </header>
+
+    <article class="manuscript">
+      <section class="story-chapter">
+        <p class="numeral">I</p>
+        <h2 data-decode>THE TRENCHES</h2>
+        <p class="reveal">Before The Order had a name, there were only the Trenches.</p>
+        <p class="reveal">A place where everyone was chasing the next opportunity.</p>
+        <p class="reveal">Where fortunes appeared overnight.</p>
+        <p class="reveal">Where strangers became millionaires.</p>
+        <p class="reveal">And where just as many people lost everything.</p>
+        <p class="reveal">The Trenches were filled with promises.</p>
+        <p class="reveal mark">10X. 100X. NEXT BIG THING.</p>
+        <p class="reveal">But behind the screens were scammers, insiders, manipulators, and people who had already won before everyone else was even allowed to play.</p>
+        <p class="reveal">The wealthy watched from above.</p>
+        <p class="reveal">The scammers hunted from below.</p>
+        <p class="reveal">And the people in the middle kept getting drained.</p>
+        <p class="reveal">Until something changed.</p>
+      </section>
+
+      <section class="story-chapter">
+        <p class="numeral">II</p>
+        <h2 data-decode>THE FIRST BROTHER</h2>
+        <p class="reveal">Nobody knows his real name.</p>
+        <p class="reveal">The Order calls him <span class="name">The First Brother</span>.</p>
+        <p class="reveal">He was one of the thousands who entered the Trenches believing the system could change his life.</p>
+        <p class="reveal">He watched people lose their savings to fake projects.</p>
+        <p class="reveal">He watched insiders dump on communities.</p>
+        <p class="reveal">He watched anonymous scammers disappear with millions.</p>
+        <p class="reveal">He watched the same people get rich over and over while everyone else was told to simply try harder.</p>
+        <p class="reveal">Then he discovered something.</p>
+        <p class="reveal">The scammers weren't stronger.</p>
+        <p class="reveal">They were simply organized.</p>
+        <p class="reveal">So he created something of his own.</p>
+        <p class="reveal">An Order.</p>
+      </section>
+
+      <section class="story-chapter">
+        <p class="numeral">III</p>
+        <h2 data-decode>THE OATH</h2>
+        <p class="reveal">The First Brother found others who had been burned by the Trenches.</p>
+        <p class="reveal">Developers. Artists. Degens. Collectors. Builders. Gamblers. Dreamers.</p>
+        <p class="reveal">People who refused to leave.</p>
+        <p class="reveal">They didn't meet in mansions.</p>
+        <p class="reveal">They didn't meet in boardrooms.</p>
+        <p class="reveal">They met in abandoned corners of the internet.</p>
+        <p class="reveal">Their faces were hidden.</p>
+        <p class="reveal">Their identities were irrelevant.</p>
+        <p class="reveal">They had one thing in common:</p>
+        <p class="reveal">They had nothing left to lose.</p>
+        <p class="reveal">They created an oath.</p>
+        <blockquote class="oath-lines reveal">
+          <p>We don't bow to the wealthy.</p>
+          <p>We don't worship the scammers.</p>
+          <p>We don't forget the people who were left behind.</p>
+          <p>We protect our own.</p>
+          <p>We build in the dark.</p>
+          <p>We rise together.</p>
+        </blockquote>
+        <p class="reveal">And beneath the oath they placed their symbol.</p>
+        <p class="reveal mark">The Seal.</p>
+      </section>
+
+      <section class="story-chapter">
+        <p class="numeral">IV</p>
+        <h2 data-decode>THE WAR</h2>
+        <p class="reveal">The Order doesn't call it a war against people.</p>
+        <p class="reveal">They call it a war against the machine.</p>
+        <p class="reveal">The machine feeds on greed.</p>
+        <p class="reveal">It creates hype.</p>
+        <p class="reveal">It creates fear.</p>
+        <p class="reveal">It makes people chase.</p>
+        <p class="reveal">Then it takes their money and disappears.</p>
+        <p class="reveal">The Order decided to fight differently.</p>
+        <p class="reveal">They would create something that couldn't simply disappear.</p>
+        <p class="reveal">Something permanent.</p>
+        <p class="reveal">Something that belonged to the people who discovered it.</p>
+        <p class="reveal">Something recorded forever.</p>
+        <p class="reveal mark">THE BLOCKCHAIN.</p>
+      </section>
+
+      <section class="story-chapter">
+        <p class="numeral">V</p>
+        <h2 data-decode>THE ROBINHOOD CHAIN</h2>
+        <p class="reveal">When the Robinhood Chain emerged, The Order saw an opportunity.</p>
+        <p class="reveal">A new battlefield.</p>
+        <p class="reveal">A new ledger.</p>
+        <p class="reveal">A new generation entering the Trenches.</p>
+        <p class="reveal">The Order began leaving its marks.</p>
+        <p class="reveal">Not advertisements.</p>
+        <p class="reveal">Not promises.</p>
+        <p class="reveal">Clues.</p>
+        <p class="reveal">Symbols hidden in artwork.</p>
+        <p class="reveal">Messages hidden in metadata.</p>
+        <p class="reveal">Wallets connected to other wallets.</p>
+        <p class="reveal">Fragments of a story spread across the chain.</p>
+        <p class="reveal">The Order called the network:</p>
+        <p class="reveal mark">THE NEW TRENCHES.</p>
+        <p class="reveal">And the Seals became their weapons.</p>
+        <p class="reveal">Not weapons of violence.</p>
+        <p class="reveal">Weapons of knowledge, ownership, and discovery.</p>
+      </section>
+
+      <section class="story-chapter">
+        <p class="numeral">VI</p>
+        <h2 data-decode>THE SEALED</h2>
+        <p class="reveal">Nobody outside The Order knows exactly what is inside a Seal.</p>
+        <p class="reveal">Every Initiate receives a mystery.</p>
+        <p class="reveal">You might uncover a soldier.</p>
+        <p class="reveal">A leader.</p>
+        <p class="reveal">A traitor.</p>
+        <p class="reveal">A victim.</p>
+        <p class="reveal">A Keeper.</p>
+        <p class="reveal">Or something that was never supposed to be discovered.</p>
+        <p class="reveal">Each piece tells part of the story.</p>
+        <p class="reveal">But no single member possesses the entire truth.</p>
+        <p class="reveal">That's intentional.</p>
+        <p class="reveal">Because The Order believes:</p>
+        <p class="reveal mark">ONE PERSON CAN BE SILENCED.<br>A THOUSAND PEOPLE CANNOT BE ERASED.</p>
+      </section>
+
+      <section class="story-chapter">
+        <p class="numeral">VII</p>
+        <h2 data-decode>THE ELITE</h2>
+        <p class="reveal">The Order has names for the people who control the Trenches from above.</p>
+        <p class="reveal">They call them:</p>
+        <p class="reveal mark">THE CROWNED.</p>
+        <p class="reveal">They have money.</p>
+        <p class="reveal">Connections.</p>
+        <p class="reveal">Information.</p>
+        <p class="reveal">Influence.</p>
+        <p class="reveal">They don't need to enter the Trenches.</p>
+        <p class="reveal">They own the ground everyone else is fighting on.</p>
+        <p class="reveal">The Order doesn't believe every wealthy person is an enemy.</p>
+        <p class="reveal">Their enemy is exploitation.</p>
+        <p class="reveal">The person who takes advantage of the desperate.</p>
+        <p class="reveal">The person who sells a lie knowing someone will believe it.</p>
+        <p class="reveal">The person who gets rich by destroying the people beneath them.</p>
+        <p class="reveal">Those are the people The Order hunts.</p>
+      </section>
+
+      <section class="story-chapter">
+        <p class="numeral">VIII</p>
+        <h2 data-decode>THE SCAMMERS</h2>
+        <p class="reveal">The Order's greatest enemies are known as:</p>
+        <p class="reveal mark">THE MASKED.</p>
+        <p class="reveal">They appear everywhere.</p>
+        <p class="reveal">Fake founders.</p>
+        <p class="reveal">Fake projects.</p>
+        <p class="reveal">Fake promises.</p>
+        <p class="reveal">Fake communities.</p>
+        <p class="reveal">They change identities constantly.</p>
+        <p class="reveal">But The Order believes every Mask eventually leaves a footprint.</p>
+        <p class="reveal">A wallet.</p>
+        <p class="reveal">A transaction.</p>
+        <p class="reveal">A message.</p>
+        <p class="reveal">A pattern.</p>
+        <p class="reveal">And the blockchain remembers.</p>
+        <p class="reveal mark">THE LEDGER NEVER FORGETS.</p>
+      </section>
+
+      <section class="story-chapter">
+        <p class="numeral">IX</p>
+        <h2 data-decode>THE INITIATES</h2>
+        <p class="reveal">Owning a Seal doesn't make you a member.</p>
+        <p class="reveal">It makes you an Initiate.</p>
+        <p class="reveal">You have entered the story.</p>
+        <p class="reveal">You have received a piece.</p>
+        <p class="reveal">But now you have a choice.</p>
+        <p class="reveal">Keep it.</p>
+        <p class="reveal">Trade it.</p>
+        <p class="reveal">Study it.</p>
+        <p class="reveal">Or find the other pieces.</p>
+        <p class="reveal">Because somewhere inside the collection are clues that reveal:</p>
+        <p class="reveal">Who betrayed The Order.</p>
+        <p class="reveal">Who created it.</p>
+        <p class="reveal">Who controls the Crowned.</p>
+        <p class="reveal">And ultimately…</p>
+        <p class="reveal">why the Order was created in the first place.</p>
+      </section>
+
+      <section class="story-chapter">
+        <p class="numeral">X</p>
+        <h2 data-decode>THE 13TH SEAL</h2>
+        <p class="reveal">The Order originally created 12 Seals of the Circle.</p>
+        <p class="reveal">Then something went wrong.</p>
+        <p class="reveal">A thirteenth appeared.</p>
+        <p class="reveal">Nobody created it.</p>
+        <p class="reveal">Nobody minted it.</p>
+        <p class="reveal">Nobody knows where it came from.</p>
+        <p class="reveal">Its symbol is different.</p>
+        <p class="reveal">Its artwork contains no member.</p>
+        <p class="reveal">No location.</p>
+        <p class="reveal">No name.</p>
+        <p class="reveal">Only a message:</p>
+        <blockquote class="oath-lines reveal">
+          <p>THE ORDER WAS NEVER CREATED TO FIGHT THE TRENCHES.</p>
+          <p>THE ORDER WAS CREATED TO OWN THEM.</p>
+        </blockquote>
+        <p class="reveal">The Initiates began asking the same question.</p>
+        <p class="reveal">Was The Order actually fighting the system?</p>
+        <p class="reveal">Or was The Order becoming the system?</p>
+      </section>
+
+      <section class="story-chapter">
+        <p class="numeral">XI</p>
+        <h2 data-decode>THE FINAL TRUTH</h2>
+        <p class="reveal">That's the secret The Order refuses to answer.</p>
+        <p class="reveal">Maybe they're heroes.</p>
+        <p class="reveal">Maybe they're criminals.</p>
+        <p class="reveal">Maybe they're revolutionaries.</p>
+        <p class="reveal">Maybe they're simply another group chasing power.</p>
+        <p class="reveal">Nobody knows.</p>
+        <p class="reveal">And that's the point.</p>
+        <p class="reveal">Because The Order isn't supposed to tell you what to believe.</p>
+        <p class="reveal">It's supposed to make you question everything.</p>
+        <p class="reveal">The scammers.</p>
+        <p class="reveal">The influencers.</p>
+        <p class="reveal">The elites.</p>
+        <p class="reveal">The projects.</p>
+        <p class="reveal">The hype.</p>
+        <p class="reveal">And even…</p>
+        <p class="reveal">The Order itself.</p>
+      </section>
+
+      <section class="story-chapter">
+        <p class="numeral">XII</p>
+        <h2 data-decode>ENTER THE TRENCHES</h2>
+        <p class="reveal">The sealed package sits in front of you.</p>
+        <p class="reveal">Black.</p>
+        <p class="reveal">Cold.</p>
+        <p class="reveal">Marked with the symbol.</p>
+        <p class="reveal">You don't know what's inside.</p>
+        <p class="reveal">You don't know who created it.</p>
+        <p class="reveal">You don't know whether you're about to uncover a member of The Order…</p>
+        <p class="reveal">or one of its enemies.</p>
+        <p class="reveal">You reach for the seal.</p>
+        <p class="reveal">And underneath the symbol are four words:</p>
+        <p class="reveal mark">WELCOME TO THE TRENCHES.</p>
+        <p class="reveal whisper">THE ORDER IS WATCHING.</p>
+      </section>
+    </article>
+
+    <section class="section oath-banner reveal">
+      <p class="mono eyebrow">// 2,000 seals · $2 · the door is open</p>
+      <h2 class="big" data-decode>ARE YOU ONE OF US?</h2>
+      <p class="banner-tag">5% creator fee. All profits go to The Future of The Order.</p>
+      <button class="btn btn-ember btn-lg" data-open-oath>Swear the Oath</button>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <svg class="footer-glyph" viewBox="0 0 40 40" aria-hidden="true"><use href="#glyph"/></svg>
+    <p class="cinzel">The Order is watching.</p>
+    <p class="mono small">
+      <a href="#" class="js-x-link" target="_blank" rel="noopener">X / @TheHoodedOrder</a>
+      · © <span class="js-year"></span> The Order
+    </p>
+    <p class="mono small dim">2,000 packs · $2 · 5% creator fee · All profits go to The Future of The Order.</p>
+    <p class="mono small dim">NFTs are digital collectibles for use in the game, not investments. Nothing here is financial advice.</p>
+  </footer>
+
+  <div class="oath" id="oath" role="dialog" aria-modal="true" aria-labelledby="oath-title" hidden>
+    <div class="oath-backdrop" data-close-oath></div>
+    <div class="oath-panel">
+      <button class="oath-close" data-close-oath aria-label="Close">✕</button>
+      <p class="mono eyebrow">// rite i · the summoning</p>
+      <h2 id="oath-title" class="cinzel">THE OATH</h2>
+      <p class="oath-sub">2,000 packs · $2 · 5% fee · profits to The Future of The Order. <span class="mono" data-sworn-line></span></p>
+
+      <div class="oath-body" id="oath-form-view">
+        <form id="oath-form" novalidate>
+          <fieldset id="oath-fields">
+            <div class="step">
+              <div class="step-head"><span class="step-no">I</span><h3>Reveal yourself</h3></div>
+              <label class="field">
+                <span>X username</span>
+                <input name="xUsername" id="x-username" class="mono" placeholder="@handle" maxlength="16" autocomplete="off" spellcheck="false" required>
+                <small class="err" data-err="xUsername"></small>
+              </label>
+            </div>
+            <div class="step">
+              <div class="step-head"><span class="step-no">II</span><h3>Mark your vessel</h3></div>
+              <label class="field">
+                <span>Wallet address (EVM)</span>
+                <div class="wallet-wrap">
+                  <input name="wallet" id="wallet" class="mono" placeholder="0x…" autocomplete="off" spellcheck="false" maxlength="42" required>
+                  <span class="wallet-ok" aria-hidden="true">◈</span>
+                </div>
+                <small class="err" data-err="wallet"></small>
+              </label>
+            </div>
+            <div class="step">
+              <div class="step-head"><span class="step-no">III</span><h3>Speak</h3></div>
+              <label class="field">
+                <span>Email <em>(optional)</em></span>
+                <input name="email" type="email" maxlength="254" placeholder="for the summons only">
+                <small class="err" data-err="email"></small>
+              </label>
+              <label class="field">
+                <span>How did the whisper reach you?</span>
+                <select name="source" required>
+                  <option value="">Choose…</option>
+                  <option value="x">A post on X</option>
+                  <option value="discord">A Discord server</option>
+                  <option value="friend">A sworn friend</option>
+                  <option value="whisper">A whisper in the dark</option>
+                  <option value="other">Somewhere else</option>
+                </select>
+                <small class="err" data-err="source"></small>
+              </label>
+              <label class="field">
+                <span>Why should the Order accept you?</span>
+                <textarea name="reason" rows="3" maxlength="600" placeholder="Speak plainly. We will know if you lie." required></textarea>
+                <small class="err" data-err="reason"></small>
+              </label>
+            </div>
+            <div class="step">
+              <div class="step-head"><span class="step-no">IV</span><h3>Swear</h3></div>
+              <label class="oath-check">
+                <input type="checkbox" name="oath">
+                <span>I swear to keep the secrets of the Order, to take from none who have little, and to answer when the packs are called.</span>
+              </label>
+              <small class="err" data-err="oath"></small>
+            </div>
+            <p class="form-error" id="form-error" hidden></p>
+            <button class="btn btn-ember btn-lg btn-block" type="submit" id="swear-btn">Seal the Oath</button>
+          </fieldset>
+        </form>
+      </div>
+
+      <div class="sworn" id="oath-sworn" hidden>
+        <div class="initiate-card">
+          <img class="initiate-pack" src="pack.png" alt="" width="96" height="144">
+          <p class="mono eyebrow">// you are known now</p>
+          <p class="initiate-label cinzel">INITIATE</p>
+          <p class="initiate-no" id="initiate-no">#0000</p>
+          <p class="initiate-alias" id="initiate-alias"></p>
+          <p class="mono small dim" id="initiate-wallet"></p>
+        </div>
+        <p class="sworn-copy">Your oath is sealed. Say nothing of what you've seen. <em>When the packs are called, you will know.</em></p>
+        <a class="btn btn-x" id="share-x" target="_blank" rel="noopener">Announce yourself on X</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="secret" id="secret" hidden>
+    <p class="mono">// clue 0 recovered</p>
+    <p class="cinzel">"The forest remembers every name the ledger forgot."</p>
+  </div>
+
+  <svg width="0" height="0" class="defs" aria-hidden="true">
+    <symbol id="glyph" viewBox="0 0 40 40">
+      <circle cx="20" cy="23" r="10" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <path d="M20 3.5 V33.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+      <path d="M10.2 23 H29.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M20 2.6 L17.6 9.2 H22.4 Z" fill="currentColor"/>
+    </symbol>
+  </svg>
+
+  <script src="app.js" type="module"></script>
+</body>
+</html>
