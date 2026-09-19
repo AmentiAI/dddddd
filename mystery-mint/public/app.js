@@ -6,7 +6,7 @@ const CONFIG = {
   price: 2,
   creatorFee: '5%',
   treasury: 'The Future of The Order',
-  xHandle: 'TheHoodedOrder',      // the project's X account
+  xHandle: 'The_Order_rh',        // the project's X account
   siteUrl: location.origin,
 };
 
@@ -279,7 +279,8 @@ function showSworn(entry) {
   $('#initiate-no').textContent = `#${pad(entry.number)}`;
   $('#initiate-alias').textContent = entry.xUsername ? `@${entry.xUsername}` : (entry.alias || '');
   $('#initiate-wallet').textContent = `${entry.wallet.slice(0, 6)}…${entry.wallet.slice(-4)}`;
-  const text = `I have sworn the oath. Initiate #${pad(entry.number)} of The Order.\n\n2,000 sealed packs at $2. All profits go to The Future of The Order.\n@${CONFIG.xHandle}`;
+  // X takes the image from the shared link's preview tags, so the post carries our art.
+  const text = `I have sworn the oath. Initiate #${pad(entry.number)} of @${CONFIG.xHandle}.\n\n2,000 sealed packs at $2. All profits go to The Future of The Order.\n\nThe Order is watching.\n@${CONFIG.xHandle}`;
   $('#share-x').href = `https://x.com/intent/post?text=${encodeURIComponent(text)}&url=${encodeURIComponent(CONFIG.siteUrl)}`;
 }
 

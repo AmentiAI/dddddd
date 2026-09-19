@@ -132,6 +132,25 @@ export function toCsv(entries) {
 
 // ---------- storage ----------
 
+// Which entry does "0xabc…", "@handle" or "#12" refer to?
+export function matchEntry(entries, spec) {
+  const raw = typeof spec === 'object' && spec !== null
+    ? (spec.wallet || spec.xUsername || spec.number)
+    : spec;
+  const text = String(raw ?? '').trim();
+  if (!text) return null;
+  if (/^#?\d+$/.test(text)) {
+    const n = Number(text.replace('#', ''));
+    return entries.find((e) => e.number === n) || null;
+  }
+  if (text.startsWith('0x')) {
+    const w = text.toLowerCase();
+    return entries.find((e) => (e.wallet || '').toLowerCase() === w) || null;
+  }
+  const u = normalizeXUsername(text).toLowerCase();
+  return entries.find((e) => (e.xUsername || '').toLowerCase() === u) || null;
+}
+
 export class WhitelistStore {
   constructor(file) {
     this.file = file;
@@ -169,7 +188,10 @@ export class WhitelistStore {
   // Check-and-insert runs synchronously so concurrent requests can't double-register;
   // disk writes are serialized behind it.
   async add(fields) {
-    const entry = { number: this.entries.length + 1, createdAt: new Date().toISOString(), ...fields };
+    // Highest number so far + 1: an empty list starts at #1, and deleting
+    // someone never hands their number to the next initiate.
+    const next = this.entries.reduce((max, e) => Math.max(max, e.number || 0), 0) + 1;
+    const entry = { number: next, createdAt: new Date().toISOString(), ...fields };
     this.entries.push(entry);
     const snapshot = JSON.stringify(this.entries, null, 2);
     const write = this.writes.then(async () => {
@@ -185,6 +207,23 @@ export class WhitelistStore {
       this.entries = this.entries.filter((x) => x !== entry);
       throw e;
     }
+    return entry;
+  }
+
+  async remove(spec) {
+    const entry = matchEntry(this.entries, spec);
+    if (!entry) return null;
+    const kept = this.entries.filter((e) => e !== entry);
+    this.entries = kept;
+    const snapshot = JSON.stringify(kept, null, 2);
+    const write = this.writes.then(async () => {
+      await mkdir(path.dirname(this.file), { recursive: true });
+      const tmp = `${this.file}.tmp`;
+      await writeFile(tmp, snapshot);
+      await rename(tmp, this.file);
+    });
+    this.writes = write.catch(() => {});
+    await write;
     return entry;
   }
 }
@@ -248,6 +287,9 @@ export class PostgresWhitelistStore {
     await this.pool.query(WHITELIST_SCHEMA);
     const { rows } = await this.pool.query('SELECT * FROM whitelist ORDER BY number');
     this.entries = rows.map(rowToEntry);
+    // Postgres keeps counting up after rows are deleted. With nobody left,
+    // numbering should start over at #1.
+    if (!rows.length) await this.restartNumbering();
   }
 
   get count() {
@@ -296,6 +338,24 @@ export class PostgresWhitelistStore {
       }
       throw e;
     }
+  }
+
+  // Only ever called with an empty table. Never fatal: numbering is cosmetic.
+  async restartNumbering() {
+    try {
+      await this.pool.query('ALTER TABLE whitelist ALTER COLUMN number RESTART WITH 1');
+    } catch (e) {
+      console.warn(`Could not restart whitelist numbering: ${e.message}`);
+    }
+  }
+
+  async remove(spec) {
+    const entry = matchEntry(this.entries, spec);
+    if (!entry) return null;
+    await this.pool.query('DELETE FROM whitelist WHERE number = $1', [entry.number]);
+    this.entries = this.entries.filter((e) => e !== entry);
+    if (!this.entries.length) await this.restartNumbering();
+    return entry;
   }
 }
 
@@ -519,6 +579,12 @@ export function createApp(cfg, store) {
 
     'GET /admin/export.json': (req, res, url) => admin(req, res, url, () => send(res, 200, store.entries)),
   };
+  routes['POST /admin/remove'] = (req, res, url) => admin(req, res, url, async () => {
+    const entry = await store.remove(await readJson(req));
+    if (!entry) return send(res, 404, { error: 'No initiate matches that wallet, @username or #number.' });
+    send(res, 200, { removed: publicEntry(entry), ...stats() });
+  });
+  routes['POST /api/admin/remove'] = routes['POST /admin/remove'];
   routes['GET /api/export.csv'] = routes['GET /admin/export.csv'];
   routes['GET /api/export.json'] = routes['GET /admin/export.json'];
 
@@ -527,7 +593,7 @@ export function createApp(cfg, store) {
     const auth = req.headers.authorization || '';
     const token = auth.startsWith('Bearer ') ? auth.slice(7) : url.searchParams.get('token') || '';
     if (!safeEqual(token, cfg.adminToken)) return send(res, 401, 'Unauthorized');
-    fn();
+    return fn();
   }
 
   return async (req, res) => {

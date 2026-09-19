@@ -4,7 +4,7 @@ import http from 'node:http';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { createApp, loadConfig, sign, unsign, toCsv, validateApplication, WhitelistStore } from '../mint.js';
+import { createApp, loadConfig, matchEntry, sign, unsign, toCsv, validateApplication, WhitelistStore } from '../mint.js';
 
 const WALLET = '0x' + 'a'.repeat(40);
 const good = { wallet: WALLET, xUsername: 'Nightshade', source: 'x', reason: 'I have waited in the dark for this.', oath: true };
@@ -165,4 +165,63 @@ test('the Vercel function boots and serves the API', async () => {
   } finally {
     server.close();
   }
+});
+
+
+// ---- removing people, and numbering ----
+
+test('matchEntry finds people by wallet, @username or #number', () => {
+  const entries = [{ number: 7, wallet: '0xAbC', xUsername: 'Nightshade' }];
+  assert.equal(matchEntry(entries, '0xabc'), entries[0]);
+  assert.equal(matchEntry(entries, '@nightshade'), entries[0]);
+  assert.equal(matchEntry(entries, '#7'), entries[0]);
+  assert.equal(matchEntry(entries, { wallet: '0xABC' }), entries[0]);
+  assert.equal(matchEntry(entries, '0xdef'), null);
+  assert.equal(matchEntry(entries, ''), null);
+});
+
+test('numbering starts at 1 and never reissues a removed number', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'mm-rm-'));
+  const store = new WhitelistStore(path.join(dir, 'wl.json'));
+  await store.load();
+
+  const first = await store.add({ xId: 'a', xUsername: 'one', wallet: '0x' + '1'.repeat(40), alias: 'One' });
+  assert.equal(first.number, 1, 'an empty whitelist starts at #1');
+  assert.equal((await store.add({ xId: 'b', xUsername: 'two', wallet: '0x' + '2'.repeat(40), alias: 'Two' })).number, 2);
+
+  assert.equal((await store.remove('@one')).number, 1);
+  assert.equal(store.count, 1);
+  const third = await store.add({ xId: 'c', xUsername: 'three', wallet: '0x' + '3'.repeat(40), alias: 'Three' });
+  assert.equal(third.number, 3, 'must not reuse #1 or clash with #2');
+  assert.deepEqual(JSON.parse(await readFile(store.file, 'utf8')).map((e) => e.number), [2, 3]);
+
+  // emptied out, numbering starts over
+  await store.remove('#2');
+  await store.remove('#3');
+  assert.equal(store.count, 0);
+  assert.equal((await store.add({ xId: 'd', xUsername: 'four', wallet: '0x' + '4'.repeat(40), alias: 'Four' })).number, 1);
+  await rm(dir, { recursive: true, force: true });
+});
+
+test('admin can remove someone over HTTP', async () => {
+  await withServer({}, async (base) => {
+    assert.equal((await post(base, good)).status, 201);
+    const remove = (body, token) => fetch(`${base}/api/admin/remove`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(token && { Authorization: `Bearer ${token}` }) },
+      body: JSON.stringify(body),
+    });
+
+    assert.equal((await remove({ wallet: WALLET })).status, 401, 'no token');
+    assert.equal((await remove({ wallet: '0x' + 'f'.repeat(40) }, 'adm')).status, 404, 'unknown wallet');
+
+    const res = await remove({ wallet: WALLET }, 'adm');
+    assert.equal(res.status, 200);
+    assert.equal((await res.json()).count, 0);
+
+    // wallet is free again, and the next initiate is #1
+    const again = await post(base, good);
+    assert.equal(again.status, 201);
+    assert.equal((await again.json()).entry.number, 1);
+  });
 });
