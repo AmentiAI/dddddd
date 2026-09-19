@@ -41,6 +41,8 @@ export function loadConfig(env = process.env, argv = []) {
   const port = Number(env.PORT || 3000);
   const baseUrl = (env.BASE_URL || `http://localhost:${port}`).replace(/\/$/, '');
   const devMode = env.DEV_MODE === '1' || argv.includes('--dev');
+  // On Vercel (and behind any reverse proxy) the public URL comes from the request headers.
+  const trustProxy = !!env.VERCEL || env.TRUST_PROXY === '1';
   let sessionSecret = env.SESSION_SECRET || '';
   if (!sessionSecret) {
     if (!devMode) throw new Error('SESSION_SECRET is required (see .env.example). Set DEV_MODE=1 for local testing.');
@@ -49,7 +51,8 @@ export function loadConfig(env = process.env, argv = []) {
   return {
     port,
     baseUrl,
-    secure: baseUrl.startsWith('https://'),
+    secure: baseUrl.startsWith('https://') || trustProxy,
+    trustProxy,
     devMode,
     sessionSecret,
     adminToken: env.ADMIN_TOKEN || '',
@@ -297,10 +300,23 @@ export class PostgresWhitelistStore {
   }
 }
 
-export async function createStore(cfg) {
+export async function createStore(cfg, { timeoutMs = 15000 } = {}) {
   if (cfg.databaseUrl) {
     const store = new PostgresWhitelistStore(cfg.databaseUrl);
-    await store.load();
+    // A wrong or unreachable DATABASE_URL otherwise hangs startup with no explanation.
+    let timer;
+    try {
+      await Promise.race([
+        store.load(),
+        new Promise((_, reject) => {
+          timer = setTimeout(() => reject(new Error(
+            `Could not reach the database at ${String(cfg.databaseUrl).replace(/:[^:@/]*@/, ':***@')} within ${timeoutMs / 1000}s. `
+            + 'Check DATABASE_URL, or remove it to store the whitelist in a local file.')), timeoutMs);
+        }),
+      ]);
+    } finally {
+      clearTimeout(timer);
+    }
     return store;
   }
   const store = new WhitelistStore(cfg.dataFile);
@@ -382,6 +398,14 @@ function safeEqual(a, b) {
   return x.length === y.length && timingSafeEqual(x, y);
 }
 
+// The origin the browser actually used, per the proxy's headers.
+export function requestOrigin(req) {
+  const first = (v) => String(v || '').split(',')[0].trim();
+  const host = first(req.headers['x-forwarded-host']) || first(req.headers.host);
+  const proto = first(req.headers['x-forwarded-proto']) || 'https';
+  return host ? `${proto}://${host}` : '';
+}
+
 function sameOrigin(origin, baseUrl) {
   if (origin === baseUrl) return true;
   try {
@@ -452,7 +476,10 @@ export function createApp(cfg, store) {
     'GET /api/me': (req, res) => send(res, 200, stats()),
 
     'POST /api/whitelist': async (req, res, url, cookies, ip) => {
-      if (!sameOrigin(req.headers.origin, cfg.baseUrl)) return send(res, 403, { error: 'Bad origin.' });
+      const allowed = [cfg.baseUrl, cfg.trustProxy ? requestOrigin(req) : ''];
+      if (!allowed.some((o) => o && sameOrigin(req.headers.origin, o))) {
+        return send(res, 403, { error: 'Bad origin.' });
+      }
       if (!String(req.headers['content-type']).startsWith('application/json')) {
         return send(res, 415, { error: 'Expected JSON.' });
       }
@@ -488,6 +515,8 @@ export function createApp(cfg, store) {
 
     'GET /admin/export.json': (req, res, url) => admin(req, res, url, () => send(res, 200, store.entries)),
   };
+  routes['GET /api/export.csv'] = routes['GET /admin/export.csv'];
+  routes['GET /api/export.json'] = routes['GET /admin/export.json'];
 
   function admin(req, res, url, fn) {
     if (!cfg.adminToken) return send(res, 404, 'Not found');

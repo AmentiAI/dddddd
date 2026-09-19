@@ -124,3 +124,44 @@ test('DATABASE_URL is picked up when set', () => {
   assert.equal(cfg.databaseUrl, 'postgresql://localhost/neondb');
   assert.equal(loadConfig({ SESSION_SECRET: 'x' }).databaseUrl, '');
 });
+
+// ---- hosting behind a proxy (Vercel) ----
+
+test('behind a proxy, the whitelist accepts the forwarded origin and exports under /api', async () => {
+  await withServer({ VERCEL: '1', BASE_URL: 'https://theorder.example' }, async (base) => {
+    const submit = (origin, headers = {}) => fetch(`${base}/api/whitelist`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Origin: origin, ...headers },
+      body: JSON.stringify({ ...good, wallet: '0x' + 'e'.repeat(40) }),
+    });
+
+    // The browser's origin is the deployment URL, which is not BASE_URL.
+    const proxied = await submit('https://mystery-mint.vercel.app', {
+      'x-forwarded-host': 'mystery-mint.vercel.app',
+      'x-forwarded-proto': 'https',
+    });
+    assert.equal(proxied.status, 201);
+
+    assert.equal((await submit('https://evil.example', { 'x-forwarded-host': 'mystery-mint.vercel.app' })).status, 403);
+
+    const csv = await fetch(`${base}/api/export.csv?token=adm`);
+    assert.equal(csv.status, 200);
+    assert.match(csv.headers.get('content-type'), /text\/csv/);
+    assert.equal((await fetch(`${base}/api/export.csv?token=wrong`)).status, 401);
+  });
+});
+
+test('the Vercel function boots and serves the API', async () => {
+  const { default: handler } = await import('../api/[...path].js');
+  process.env.SESSION_SECRET ||= 'test-secret';
+  process.env.DATA_FILE = path.join(await mkdtemp(path.join(tmpdir(), 'mm-fn-')), 'wl.json');
+  const server = http.createServer(handler);
+  await new Promise((r) => server.listen(0, r));
+  try {
+    const res = await fetch(`http://localhost:${server.address().port}/api/stats`);
+    assert.equal(res.status, 200);
+    assert.equal((await res.json()).count, 0);
+  } finally {
+    server.close();
+  }
+});
