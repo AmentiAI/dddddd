@@ -49,6 +49,38 @@ The export has each initiate's number, X handle, wallet, alias, email, how they 
 and their answer. The rules are one oath per X username and one per wallet. Set `WHITELIST_CAP`
 to stop accepting oaths after a set number.
 
+## Remove someone from the whitelist
+
+```bash
+node scripts/remove.mjs 0xabc123...      # by wallet
+node scripts/remove.mjs @handle          # by X username
+node scripts/remove.mjs "#12"            # by initiate number
+```
+
+It edits the live list when `DATABASE_URL` is set, otherwise the local file.
+Same thing over HTTP, for when you are away from your computer:
+
+```bash
+curl -X POST https://YOUR-DOMAIN/api/admin/remove \
+  -H "Authorization: Bearer YOUR_ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"wallet":"0xabc123..."}'
+```
+
+Numbers are never reused: removing #1 does not give #1 to the next person.
+
+## The X share card
+
+X reads the preview image from the page's meta tags and does not run JavaScript,
+so the tags need your real domain written in. After your first deploy:
+
+```bash
+node scripts/set-domain.mjs https://your-site.vercel.app
+```
+
+Then commit and push. Check the result at https://cards-dev.twitter.com/validator.
+The account is set in `public/app.js` (`xHandle`) and in the footer of each page.
+
 ## Customize
 
 - `public/app.js`, the `CONFIG` block at the top: the mint date (starts the countdown),
