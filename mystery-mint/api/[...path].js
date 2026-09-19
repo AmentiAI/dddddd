@@ -1,7 +1,6 @@
 // Vercel entry point. Vercel serves public/ as static files and runs this function
-// for every /api/* request. Everything else (the server logic) lives in server.js,
-// so `npm start` on a normal server and Vercel share the same code.
-import { createApp, createStore, loadConfig } from '../server.js';
+// for every /api/* request. Shared logic lives in mint.js.
+import { createApp, createStore, loadConfig } from '../mint.js';
 
 let appPromise;
 

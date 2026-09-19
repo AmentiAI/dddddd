@@ -43,11 +43,8 @@ export function loadConfig(env = process.env, argv = []) {
   const devMode = env.DEV_MODE === '1' || argv.includes('--dev');
   // On Vercel (and behind any reverse proxy) the public URL comes from the request headers.
   const trustProxy = !!env.VERCEL || env.TRUST_PROXY === '1';
-  let sessionSecret = env.SESSION_SECRET || '';
-  if (!sessionSecret) {
-    if (!devMode) throw new Error('SESSION_SECRET is required (see .env.example). Set DEV_MODE=1 for local testing.');
-    sessionSecret = randomBytes(32).toString('hex');
-  }
+  // OAuth is gone; a secret is only needed if you still sign cookies. Missing is fine.
+  const sessionSecret = env.SESSION_SECRET || randomBytes(32).toString('hex');
   return {
     port,
     baseUrl,
@@ -241,7 +238,12 @@ function rowToEntry(row) {
 
 export class PostgresWhitelistStore {
   constructor(connectionString) {
-    this.pool = new pg.Pool({ connectionString, max: 4 });
+    this.pool = new pg.Pool({
+      connectionString,
+      max: envFlag('VERCEL') ? 1 : 4,
+      connectionTimeoutMillis: 8000,
+      ssl: /sslmode=disable/i.test(connectionString) ? false : { rejectUnauthorized: false },
+    });
     this.entries = [];
   }
 
@@ -300,7 +302,12 @@ export class PostgresWhitelistStore {
   }
 }
 
-export async function createStore(cfg, { timeoutMs = 15000 } = {}) {
+function envFlag(name) {
+  const v = process.env[name];
+  return Boolean(v) && v !== '0' && v !== 'false';
+}
+
+export async function createStore(cfg, { timeoutMs = 8000 } = {}) {
   if (cfg.databaseUrl) {
     const store = new PostgresWhitelistStore(cfg.databaseUrl);
     // A wrong or unreachable DATABASE_URL otherwise hangs startup with no explanation.
@@ -544,7 +551,7 @@ export function createApp(cfg, store) {
 
 function isDirectRun() {
   const entry = process.argv[1];
-  return Boolean(entry) && path.basename(entry).toLowerCase() === 'server.js';
+  return Boolean(entry) && path.basename(entry).toLowerCase() === 'mint.js';
 }
 
 export async function start(argv = process.argv.slice(2)) {
@@ -585,7 +592,9 @@ export async function start(argv = process.argv.slice(2)) {
   return ipv4;
 }
 
-if (isDirectRun()) {
+// Never auto-listen on Vercel. A file named server.js used to make Vercel treat
+// the whole site as one function and crash the homepage.
+if (isDirectRun() && !process.env.VERCEL) {
   start().catch((e) => {
     console.error(`\nCould not start: ${e.message}\n`);
     process.exit(1);

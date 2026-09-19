@@ -23,9 +23,9 @@ The site is in the `mystery-mint` subfolder of the repo, so Vercel has to be tol
    Storage -> Create Database -> Neon Postgres (free tier). Connect it to the project.
    It sets `DATABASE_URL` automatically; use the **pooled** connection string.
 3. **Settings -> Environment Variables**, for all environments:
-   - `SESSION_SECRET` - any long random string
-   - `ADMIN_TOKEN` - your password for downloading the whitelist
    - `DATABASE_URL` - set by step 2
+   - `ADMIN_TOKEN` - your password for downloading the whitelist
+   - `SESSION_SECRET` - optional; any long random string
 4. Redeploy. `public/` is served as the site, and `api/[...path].js` runs the whitelist API.
    Vercel's own URL works out of the box; `BASE_URL` is only needed for a custom domain.
 

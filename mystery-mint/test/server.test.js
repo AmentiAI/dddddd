@@ -4,7 +4,7 @@ import http from 'node:http';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { createApp, loadConfig, sign, unsign, toCsv, validateApplication, WhitelistStore } from '../server.js';
+import { createApp, loadConfig, sign, unsign, toCsv, validateApplication, WhitelistStore } from '../mint.js';
 
 const WALLET = '0x' + 'a'.repeat(40);
 const good = { wallet: WALLET, xUsername: 'Nightshade', email: '', source: 'x', reason: 'I have waited in the dark for this.', oath: true };
@@ -111,12 +111,13 @@ test('static files and path traversal', async () => {
     assert.equal(board.status, 200);
     assert.match(await board.text(), /THE BOARD/);
     assert.doesNotMatch(await home.text(), /Connect with X/);
-    assert.equal((await fetch(`${base}/..%2fserver.js`)).status, 404);
+    assert.equal((await fetch(`${base}/..%2fmint.js`)).status, 404);
   });
 });
 
-test('refuses to start without a session secret outside dev mode', () => {
-  assert.throws(() => loadConfig({}), /SESSION_SECRET/);
+test('missing SESSION_SECRET is allowed', () => {
+  const cfg = loadConfig({});
+  assert.ok(cfg.sessionSecret);
 });
 
 test('DATABASE_URL is picked up when set', () => {
