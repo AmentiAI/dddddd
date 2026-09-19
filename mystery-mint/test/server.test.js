@@ -4,10 +4,10 @@ import http from 'node:http';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { createApp, loadConfig, matchEntry, sign, unsign, toCsv, validateApplication, WhitelistStore } from '../mint.js';
+import { createApp, loadConfig, sign, unsign, toCsv, validateApplication, WhitelistStore } from '../mint.js';
 
 const WALLET = '0x' + 'a'.repeat(40);
-const good = { wallet: WALLET, xUsername: 'Nightshade', email: '', source: 'x', reason: 'I have waited in the dark for this.', oath: true };
+const good = { wallet: WALLET, xUsername: 'Nightshade', source: 'x', reason: 'I have waited in the dark for this.', oath: true };
 
 test('signed cookies reject tampering and expiry', () => {
   const t = sign({ xId: '1' }, 'secret', 60);
@@ -20,7 +20,7 @@ test('signed cookies reject tampering and expiry', () => {
 test('validation', () => {
   assert.deepEqual(validateApplication(good).errors, {});
   const { errors } = validateApplication({ wallet: '0x123', xUsername: '!!', alias: 'a', email: 'nope', source: 'tv', reason: 'short', oath: 'yes' });
-  assert.deepEqual(Object.keys(errors).sort(), ['alias', 'email', 'oath', 'reason', 'source', 'wallet', 'xUsername']);
+  assert.deepEqual(Object.keys(errors).sort(), ['alias', 'oath', 'reason', 'source', 'wallet', 'xUsername']);
 });
 
 test('csv escapes quotes and blocks formulas', () => {
@@ -165,59 +165,4 @@ test('the Vercel function boots and serves the API', async () => {
   } finally {
     server.close();
   }
-});
-
-
-// ---- removing people from the whitelist ----
-
-test('matchEntry finds people by wallet, @username or #number', () => {
-  const entries = [{ number: 7, wallet: '0xAbC', xUsername: 'Nightshade' }];
-  assert.equal(matchEntry(entries, '0xabc'), entries[0]);
-  assert.equal(matchEntry(entries, '@nightshade'), entries[0]);
-  assert.equal(matchEntry(entries, '#7'), entries[0]);
-  assert.equal(matchEntry(entries, { wallet: '0xABC' }), entries[0]);
-  assert.equal(matchEntry(entries, '0xdef'), null);
-  assert.equal(matchEntry(entries, ''), null);
-});
-
-test('removing an entry does not reissue its number', async () => {
-  const dir = await mkdtemp(path.join(tmpdir(), 'mm-rm-'));
-  const store = new WhitelistStore(path.join(dir, 'wl.json'));
-  await store.load();
-  await store.add({ xId: 'a', xUsername: 'one', wallet: '0x' + '1'.repeat(40), alias: 'One' });
-  const second = await store.add({ xId: 'b', xUsername: 'two', wallet: '0x' + '2'.repeat(40), alias: 'Two' });
-  assert.equal(second.number, 2);
-
-  assert.equal((await store.remove('@one')).number, 1);
-  assert.equal(store.count, 1);
-  const third = await store.add({ xId: 'c', xUsername: 'three', wallet: '0x' + '3'.repeat(40), alias: 'Three' });
-  assert.equal(third.number, 3, 'must not reuse #1 or clash with #2');
-
-  const onDisk = JSON.parse(await readFile(store.file, 'utf8'));
-  assert.deepEqual(onDisk.map((e) => e.number), [2, 3]);
-  await rm(dir, { recursive: true, force: true });
-});
-
-test('admin can remove someone over HTTP', async () => {
-  await withServer({}, async (base) => {
-    assert.equal((await post(base, good)).status, 201);
-
-    const remove = (body, token) => fetch(`${base}/api/admin/remove`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...(token && { Authorization: `Bearer ${token}` }) },
-      body: JSON.stringify(body),
-    });
-
-    assert.equal((await remove({ wallet: WALLET })).status, 401, 'no token');
-    assert.equal((await remove({ wallet: '0x' + 'f'.repeat(40) }, 'adm')).status, 404, 'unknown wallet');
-
-    const res = await remove({ wallet: WALLET }, 'adm');
-    assert.equal(res.status, 200);
-    const { removed, count } = await res.json();
-    assert.equal(removed.wallet, WALLET);
-    assert.equal(count, 0);
-
-    // the wallet is free again
-    assert.equal((await post(base, good)).status, 201);
-  });
 });

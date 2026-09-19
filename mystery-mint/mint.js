@@ -14,7 +14,6 @@ const MAX_BODY = 8 * 1024;
 
 export const WALLET_RE = /^0x[0-9a-fA-F]{40}$/;
 export const X_USER_RE = /^[A-Za-z0-9_]{1,15}$/;
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const SOURCES = ['x', 'discord', 'friend', 'whisper', 'other'];
 
 export function normalizeXUsername(raw) {
@@ -22,7 +21,7 @@ export function normalizeXUsername(raw) {
 }
 
 // Minimal .env loader (works on every Node version / OS). Real env vars win.
-export async function loadDotEnv(files = [path.join(ROOT, '.env'), path.join(ROOT, '..', '.env')]) {
+async function loadDotEnv(files = [path.join(ROOT, '.env'), path.join(ROOT, '..', '.env')]) {
   for (const file of files) {
     let text;
     try {
@@ -108,14 +107,12 @@ export function validateApplication(body) {
     wallet: str(body.wallet),
     xUsername,
     alias,
-    email: str(body.email),
     reason: str(body.reason),
     source: str(body.source),
   };
   if (!X_USER_RE.test(value.xUsername)) errors.xUsername = 'Enter your X username (letters, numbers, underscore).';
   if (!WALLET_RE.test(value.wallet)) errors.wallet = 'Must be a 0x wallet address (42 characters).';
   if (value.alias.length < 2 || value.alias.length > 32) errors.alias = 'Your name in the Order: 2 to 32 characters.';
-  if (value.email && (value.email.length > 254 || !EMAIL_RE.test(value.email))) errors.email = 'That email is not real.';
   if (value.reason.length < 20) errors.reason = 'Speak at least 20 characters. The Order listens.';
   if (value.reason.length > 600) errors.reason = 'Keep it under 600 characters.';
   if (!SOURCES.includes(value.source)) errors.source = 'Tell us how the whisper reached you.';
@@ -134,25 +131,6 @@ export function toCsv(entries) {
 }
 
 // ---------- storage ----------
-
-// Which entry does "0xabc…", "@handle" or "#12" refer to?
-export function matchEntry(entries, spec) {
-  const raw = typeof spec === 'object' && spec !== null
-    ? (spec.wallet || spec.xUsername || spec.number)
-    : spec;
-  const text = String(raw ?? '').trim();
-  if (!text) return null;
-  if (/^#?\d+$/.test(text)) {
-    const n = Number(text.replace('#', ''));
-    return entries.find((e) => e.number === n) || null;
-  }
-  if (text.startsWith('0x')) {
-    const w = text.toLowerCase();
-    return entries.find((e) => (e.wallet || '').toLowerCase() === w) || null;
-  }
-  const u = normalizeXUsername(text).toLowerCase();
-  return entries.find((e) => (e.xUsername || '').toLowerCase() === u) || null;
-}
 
 export class WhitelistStore {
   constructor(file) {
@@ -191,9 +169,7 @@ export class WhitelistStore {
   // Check-and-insert runs synchronously so concurrent requests can't double-register;
   // disk writes are serialized behind it.
   async add(fields) {
-    // Highest number so far + 1, so deleting an entry never reissues its number.
-    const next = this.entries.reduce((max, e) => Math.max(max, e.number || 0), 0) + 1;
-    const entry = { number: next, createdAt: new Date().toISOString(), ...fields };
+    const entry = { number: this.entries.length + 1, createdAt: new Date().toISOString(), ...fields };
     this.entries.push(entry);
     const snapshot = JSON.stringify(this.entries, null, 2);
     const write = this.writes.then(async () => {
@@ -209,23 +185,6 @@ export class WhitelistStore {
       this.entries = this.entries.filter((x) => x !== entry);
       throw e;
     }
-    return entry;
-  }
-
-  async remove(spec) {
-    const entry = matchEntry(this.entries, spec);
-    if (!entry) return null;
-    const kept = this.entries.filter((e) => e !== entry);
-    this.entries = kept;
-    const snapshot = JSON.stringify(kept, null, 2);
-    const write = this.writes.then(async () => {
-      await mkdir(path.dirname(this.file), { recursive: true });
-      const tmp = `${this.file}.tmp`;
-      await writeFile(tmp, snapshot);
-      await rename(tmp, this.file);
-    });
-    this.writes = write.catch(() => {});
-    await write;
     return entry;
   }
 }
@@ -337,14 +296,6 @@ export class PostgresWhitelistStore {
       }
       throw e;
     }
-  }
-
-  async remove(spec) {
-    const entry = matchEntry(this.entries, spec);
-    if (!entry) return null;
-    await this.pool.query('DELETE FROM whitelist WHERE number = $1', [entry.number]);
-    this.entries = this.entries.filter((e) => e !== entry);
-    return entry;
   }
 }
 
@@ -568,13 +519,6 @@ export function createApp(cfg, store) {
 
     'GET /admin/export.json': (req, res, url) => admin(req, res, url, () => send(res, 200, store.entries)),
   };
-  routes['POST /admin/remove'] = async (req, res, url) => admin(req, res, url, async () => {
-    const body = await readJson(req);
-    const entry = await store.remove(body);
-    if (!entry) return send(res, 404, { error: 'No initiate matches that wallet, @username or #number.' });
-    send(res, 200, { removed: publicEntry(entry), ...stats() });
-  });
-  routes['POST /api/admin/remove'] = routes['POST /admin/remove'];
   routes['GET /api/export.csv'] = routes['GET /admin/export.csv'];
   routes['GET /api/export.json'] = routes['GET /admin/export.json'];
 
@@ -583,7 +527,7 @@ export function createApp(cfg, store) {
     const auth = req.headers.authorization || '';
     const token = auth.startsWith('Bearer ') ? auth.slice(7) : url.searchParams.get('token') || '';
     if (!safeEqual(token, cfg.adminToken)) return send(res, 401, 'Unauthorized');
-    return fn();
+    fn();
   }
 
   return async (req, res) => {

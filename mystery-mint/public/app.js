@@ -6,7 +6,7 @@ const CONFIG = {
   price: 2,
   creatorFee: '5%',
   treasury: 'The Future of The Order',
-  xHandle: 'The_Order_rh',        // the project's X account
+  xHandle: 'TheHoodedOrder',      // the project's X account
   siteUrl: location.origin,
 };
 
@@ -279,8 +279,7 @@ function showSworn(entry) {
   $('#initiate-no').textContent = `#${pad(entry.number)}`;
   $('#initiate-alias').textContent = entry.xUsername ? `@${entry.xUsername}` : (entry.alias || '');
   $('#initiate-wallet').textContent = `${entry.wallet.slice(0, 6)}…${entry.wallet.slice(-4)}`;
-  // X pulls the image from the shared link's preview tags, so the card shows our art.
-  const text = `I have sworn the oath. Initiate #${pad(entry.number)} of @${CONFIG.xHandle}.\n\n2,000 sealed packs at $2. All profits go to The Future of The Order.\n\nThe Order is watching.`;
+  const text = `I have sworn the oath. Initiate #${pad(entry.number)} of The Order.\n\n2,000 sealed packs at $2. All profits go to The Future of The Order.\n@${CONFIG.xHandle}`;
   $('#share-x').href = `https://x.com/intent/post?text=${encodeURIComponent(text)}&url=${encodeURIComponent(CONFIG.siteUrl)}`;
 }
 
@@ -336,7 +335,6 @@ function oath() {
     const body = {
       xUsername: f.xUsername.value.trim(),
       wallet: f.wallet.value.trim(),
-      email: f.email.value.trim(),
       source: f.source.value,
       reason: f.reason.value.trim(),
       oath: f.oath.checked,
